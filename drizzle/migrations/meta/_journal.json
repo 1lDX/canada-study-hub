@@ -8,6 +8,13 @@
       "when": 1791034601178,
       "tag": "0000_college_manage_courses",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793605237142,
+      "tag": "0001_shared_agent_application_access",
+      "breakpoints": true
     }
   ]
 }
