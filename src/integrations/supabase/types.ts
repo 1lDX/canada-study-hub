@@ -637,6 +637,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_active_agent: { Args: { _user_id: string }; Returns: boolean }
       is_party_on: { Args: { p_application_id: string }; Returns: boolean }
       level_rank: { Args: { l: string }; Returns: number }
       my_role: { Args: never; Returns: Database["public"]["Enums"]["app_role"] }
