@@ -120,8 +120,8 @@ function toCourse(r: any): Course {
 }
 
 function toApplication(r: any): Application {
-  const offer = (r.offers ?? [])[0];
-  const invoice = (r.invoices ?? [])[0];
+  const offer = Array.isArray(r.offers) ? r.offers[0] : r.offers;
+  const invoice = Array.isArray(r.invoices) ? r.invoices[0] : r.invoices;
   return {
     id: r.code,
     uuid: r.id,
