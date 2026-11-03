@@ -15,6 +15,13 @@
       "when": 1793605237142,
       "tag": "0001_shared_agent_application_access",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793709800895,
+      "tag": "0002_add_admin_role",
+      "breakpoints": true
     }
   ]
 }
