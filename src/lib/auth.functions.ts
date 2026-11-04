@@ -7,7 +7,7 @@ export type ProfileRecord = {
   lastname: string;
   email: string;
   org: string | null;
-  role: "student" | "agent" | "college" | null;
+  role: "student" | "agent" | "college" | "admin" | null;
 };
 
 /**
@@ -49,7 +49,8 @@ export const ensureProfile = createServerFn({ method: "POST" })
       const meta = (userData.user.user_metadata ?? {}) as Record<string, unknown>;
       const appMeta = (userData.user.app_metadata ?? {}) as Record<string, unknown>;
       const claimed = String(appMeta["portal_role"] ?? "student");
-      const role: "student" | "agent" | "college" = claimed === "agent" || claimed === "college" ? claimed : "student";
+      const role: "student" | "agent" | "college" | "admin" =
+        claimed === "agent" || claimed === "college" || claimed === "admin" ? claimed : "student";
 
       const email = userData.user.email ?? "";
       const firstname = String(meta["firstname"] ?? "").trim() || email.split("@")[0] || "สมาชิก";

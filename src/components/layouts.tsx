@@ -173,6 +173,11 @@ export const collegeNav = [
   { to: "/college/profile", label: "Profile" },
 ];
 
+export const adminNav = [
+  { to: "/admin/dashboard", label: "Dashboard" },
+  { to: "/admin/accounts", label: "จัดการบัญชี" },
+];
+
 export function DashboardLayout({
   nav,
   children,

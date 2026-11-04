@@ -20,6 +20,7 @@ const demos: [string, string][] = [
   ["student@demo.com", "Student"],
   ["agent@demo.com", "Agent"],
   ["college@demo.com", "College"],
+  ["admin@demo.com", "Admin"],
 ];
 
 function LoginPage() {
