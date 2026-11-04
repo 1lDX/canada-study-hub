@@ -53,8 +53,7 @@ function AdminAccounts() {
     form.firstname.trim() &&
     form.lastname.trim() &&
     /^\S+@\S+\.\S+$/.test(form.email.trim()) &&
-    form.password.length >= 8 &&
-    (form.role === "college" ? true : true);
+    form.password.length >= 8;
 
   const submit = async () => {
     setCreating(true);

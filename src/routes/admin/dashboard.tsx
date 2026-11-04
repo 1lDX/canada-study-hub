@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DashboardLayout, adminNav } from "@/components/layouts";
-import { Button, Card, SectionTitle, Stat } from "@/components/ui-kit";
+import { Button, Card, Stat } from "@/components/ui-kit";
 import { listManagedAccounts, type ManagedAccount } from "@/lib/admin.functions";
 import { formatDate } from "@/lib/data";
 

@@ -11,12 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AgentRouteRouteImport } from './routes/agent/route'
 import { Route as CollegeRouteRouteImport } from './routes/college/route'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as StudentRouteRouteImport } from './routes/student/route'
+import { Route as AdminAccountsRouteImport } from './routes/admin/accounts'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AgentDashboardRouteImport } from './routes/agent/dashboard'
 import { Route as AgentDocumentsRouteImport } from './routes/agent/documents'
 import { Route as AgentNotificationsRouteImport } from './routes/agent/notifications'
@@ -59,6 +62,11 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgentRouteRoute = AgentRouteRouteImport.update({
   id: '/agent',
   path: '/agent',
@@ -88,6 +96,16 @@ const StudentRouteRoute = StudentRouteRouteImport.update({
   id: '/student',
   path: '/student',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAccountsRoute = AdminAccountsRouteImport.update({
+  id: '/accounts',
+  path: '/accounts',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AgentDashboardRoute = AgentDashboardRouteImport.update({
   id: '/dashboard',
@@ -251,6 +269,7 @@ const StudentApplyCourseIdRoute = StudentApplyCourseIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/agent': typeof AgentRouteRouteWithChildren
   '/college': typeof CollegeRouteRouteWithChildren
   '/student': typeof StudentRouteRouteWithChildren
@@ -258,6 +277,8 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/agent/dashboard': typeof AgentDashboardRoute
   '/agent/documents': typeof AgentDocumentsRoute
   '/agent/notifications': typeof AgentNotificationsRoute
@@ -292,6 +313,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/agent': typeof AgentRouteRouteWithChildren
   '/college': typeof CollegeRouteRouteWithChildren
   '/student': typeof StudentRouteRouteWithChildren
@@ -299,6 +321,8 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/agent/dashboard': typeof AgentDashboardRoute
   '/agent/documents': typeof AgentDocumentsRoute
   '/agent/notifications': typeof AgentNotificationsRoute
@@ -334,6 +358,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/agent': typeof AgentRouteRouteWithChildren
   '/college': typeof CollegeRouteRouteWithChildren
   '/student': typeof StudentRouteRouteWithChildren
@@ -341,6 +366,8 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/agent/dashboard': typeof AgentDashboardRoute
   '/agent/documents': typeof AgentDocumentsRoute
   '/agent/notifications': typeof AgentNotificationsRoute
@@ -377,6 +404,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/agent'
     | '/college'
     | '/student'
@@ -384,6 +412,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/login'
     | '/register'
+    | '/admin/accounts'
+    | '/admin/dashboard'
     | '/agent/dashboard'
     | '/agent/documents'
     | '/agent/notifications'
@@ -418,6 +448,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/agent'
     | '/college'
     | '/student'
@@ -425,6 +456,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/login'
     | '/register'
+    | '/admin/accounts'
+    | '/admin/dashboard'
     | '/agent/dashboard'
     | '/agent/documents'
     | '/agent/notifications'
@@ -459,6 +492,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/agent'
     | '/college'
     | '/student'
@@ -466,6 +500,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/login'
     | '/register'
+    | '/admin/accounts'
+    | '/admin/dashboard'
     | '/agent/dashboard'
     | '/agent/documents'
     | '/agent/notifications'
@@ -501,6 +537,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AgentRouteRoute: typeof AgentRouteRouteWithChildren
   CollegeRouteRoute: typeof CollegeRouteRouteWithChildren
   StudentRouteRoute: typeof StudentRouteRouteWithChildren
@@ -526,6 +563,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agent': {
@@ -569,6 +613,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/student'
       preLoaderRoute: typeof StudentRouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/accounts': {
+      id: '/admin/accounts'
+      path: '/accounts'
+      fullPath: '/admin/accounts'
+      preLoaderRoute: typeof AdminAccountsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/agent/dashboard': {
       id: '/agent/dashboard'
@@ -790,6 +848,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminAccountsRoute: typeof AdminAccountsRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAccountsRoute: AdminAccountsRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 interface AgentRouteRouteChildren {
   AgentDashboardRoute: typeof AgentDashboardRoute
   AgentDocumentsRoute: typeof AgentDocumentsRoute
@@ -880,6 +952,7 @@ const StudentRouteRouteWithChildren = StudentRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   AgentRouteRoute: AgentRouteRouteWithChildren,
   CollegeRouteRoute: CollegeRouteRouteWithChildren,
   StudentRouteRoute: StudentRouteRouteWithChildren,

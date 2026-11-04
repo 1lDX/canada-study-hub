@@ -113,6 +113,30 @@ export const createManagedAccount = createServerFn({ method: "POST" })
       throw new Error(error.message);
     }
     if (!created.user) throw new Error("สร้างบัญชีไม่สำเร็จ");
+
+    // Create the profile, role and agents/colleges rows right away so the new
+    // account shows up on the accounts page and can be managed before its
+    // first sign-in. The existing ensureProfile flow keeps working: it sees the
+    // existing profile and reuses it.
+    const firstname = data.firstname.trim();
+    const lastname = data.lastname.trim();
+    const org = data.org.trim();
+
+    const { error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .insert({ id: created.user.id, firstname, lastname, email, org: org || null });
+    if (profileError) throw new Error(profileError.message);
+    const { error: roleError } = await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: data.role });
+    if (roleError) throw new Error(roleError.message);
+    if (data.role === "agent") {
+      const { error } = await supabaseAdmin.from("agents").insert({ account_id: created.user.id, agent_status: "active" });
+      if (error) throw new Error(error.message);
+    }
+    if (data.role === "college") {
+      const { error } = await supabaseAdmin.from("colleges").insert({ account_id: created.user.id, college_name: org });
+      if (error) throw new Error(error.message);
+    }
+
     return { id: created.user.id, email };
   });
 
