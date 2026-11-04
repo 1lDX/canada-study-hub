@@ -58,12 +58,6 @@ function AdminDashboard() {
           </p>
         </Card>
       </div>
-
-      {rows && (
-        <div className="mt-8">
-          <SectionTitle title="บัญชีล่าสุด" desc="อัปเดต {formatDate(rows[0]?.createdAt ?? "")}" />
-        </div>
-      )}
     </DashboardLayout>
   );
 }

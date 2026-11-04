@@ -11,7 +11,7 @@ import {
 import { DOC_TYPES, STATUSES, meetsLevel, type Course, type PaymentStatus, type Status } from "./data";
 import { extensionOf, uploadFile } from "./uploads";
 
-export type Role = "student" | "agent" | "college";
+export type Role = "student" | "agent" | "college" | "admin";
 
 /** A person the signed-in account is allowed to see (own profile, or linked students). */
 export type Person = { id: string; firstname: string; lastname: string; email: string; org?: string | null };
