@@ -306,6 +306,7 @@ export const runApplicationAction = createServerFn({ method: "POST" })
           .eq("application_id", app.id)
           .eq("status", PAYMENT_PENDING);
         if (error) throw new Error(error.message);
+        await setStatus(supabase, app, PAID, userId, LABEL.agent);
         const target = app.college_id ?? app.student_id;
         await notify(supabase, app.id, target, "Agent ส่งข้อมูล Payment", `${app.code} รอ College ยืนยัน`);
         await notify(supabase, app.id, app.student_id, "Payment ผ่านการตรวจสอบ", `${app.code} ส่งให้ College ยืนยันแล้ว`);
