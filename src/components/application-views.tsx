@@ -130,7 +130,7 @@ export function DocsList({ app }: { app: Application }) {
 
                     >
 
-                      ดาวนโหลด
+                      ดาวน์โหลด
 
                     </button>
 
@@ -225,7 +225,7 @@ export function StudentSummary({ app }: { app: Application }) {
 
             >
 
-              ดาวนโหลดผลสอบ
+              ดาวน์โหลดผลสอบ
 
             </button>
 
@@ -302,7 +302,7 @@ export function PaymentsCard({ app }: { app: Application }) {
                 onClick={() => void downloadStoredFile("payments", p.filePath, p.fileName)}
                 className="ml-2 font-medium text-primary hover:underline"
               >
-                ดดูok
+                เปิดดู
               </button>
             )}
           </td>
