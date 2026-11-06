@@ -495,7 +495,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       uploadAppFile: async (appId, bucket, name, file) => {
         const app = appByCode(appId);
-        if (!app) throw new Error("ไมพบใบสมัครน้");
+        if (!app) throw new Error("ไม่พบใบสมัครนี้");
         const path = `${app.uuid}/${name}.${extensionOf(file.name)}`;
         await uploadFile(bucket, path, file);
         return { fileName: file.name, filePath: path };
@@ -503,7 +503,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       uploadDoc: async (appId, doc) => {
         await guard(async () => {
           const app = appByCode(appId);
-          if (!app) throw new Error("ไมพบบัใบสมัครน้");
+          if (!app) throw new Error("ไม่พบใบสมัครนี้");
           const path = `${app.uuid}/${doc.key}.${extensionOf(doc.file.name)}`;
           await uploadFile("documents", path, doc.file);
           const { error } = await supabase.from("application_documents").upsert(
@@ -523,7 +523,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       act: async (appId, action, payload) => {
         await guard(async () => {
           const app = appByCode(appId);
-          if (!app) throw new Error("ไมพบบัใบสมัครน้");
+          if (!app) throw new Error("ไม่พบใบสมัครนี้");
           await runApplicationAction({ data: { appId: app.uuid, action, ...payload } });
           await refresh();
         });

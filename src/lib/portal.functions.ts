@@ -106,7 +106,7 @@ export const submitApplication = createServerFn({ method: "POST" })
       _role: "student",
     });
     if (roleError) throw new Error(roleError.message);
-    if (!isStudent) throw new Error("เฉพาะบัญชีนักเรียนเท่านั้ท่สมัครหลักสูตรได");
+    if (!isStudent) throw new Error("เฉพาะบัญชีนักเรียนเท่านั้นที่สมัครหลักสูตรได้");
 
     const { data: agent, error: agentError } = await supabase
       .from("agents")
@@ -116,7 +116,7 @@ export const submitApplication = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
     if (agentError) throw new Error(agentError.message);
-    if (!agent) throw new Error("ย งไม่มีบัญชี Agent ที่พร้อมรบัใบสมัคร");
+    if (!agent) throw new Error("ยังไม่มีบัญชี Agent ที่พร้อมรับใบสมัคร");
 
     const { data: created, error: insertError } = await supabase
       .from("applications")
@@ -125,19 +125,19 @@ export const submitApplication = createServerFn({ method: "POST" })
       .single();
     if (insertError) {
       if (insertError.message.includes("Language level")) {
-        throw new Error("ระดับภาษาของคณุ ย งไม่ผ่านเกณฑข์องหลักสูตรน");
+        throw new Error("ระดับภาษาของคุณยังไม่ผ่านเกณฑ์ของหลักสูตรนี้");
       }
       throw new Error(insertError.message);
     }
 
     for (const doc of data.docs) {
       if (!doc.filePath.startsWith(`${userId}/staging/`)) {
-        throw new Error("ไฟลข์อสมูลไมถู่กต้อง กรุณาอัปโหลดใหม่อีกครั้ง");
+        throw new Error("ข้อมูลไฟล์ไม่ถูกต้อง กรุณาอัปโหลดใหม่อีกครั้ง");
       }
       const ext = doc.fileName.split(".").pop()?.toLowerCase() || "pdf";
       const target = `${created.id}/${doc.key}.${ext}`;
       const { error: copyError } = await supabase.storage.from("documents").copy(doc.filePath, target);
-      if (copyError) throw new Error(`ย้ายไฟล์ ${doc.fileName} ไม้สำเร็จ: ${copyError.message}`);
+      if (copyError) throw new Error(`ย้ายไฟล์ ${doc.fileName} ไม่สำเร็จ: ${copyError.message}`);
       const { error: docError } = await supabase.from("application_documents").insert({
         application_id: created.id,
         doc_key: doc.key,
@@ -167,11 +167,11 @@ export const runApplicationAction = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const role = ROLE_OF_ACTION[data.action];
-    if (!role) throw new Error("ไมร็บัขั้นตอนน");
+    if (!role) throw new Error("ไม่รู้จักขั้นตอนนี้");
 
     const { data: hasRole, error: roleError } = await supabase.rpc("has_role", { _user_id: userId, _role: role });
     if (roleError) throw new Error(roleError.message);
-    if (!hasRole) throw new Error("บัญชีของคณุ ไม่มีสิทธิดำเนินการขั้นตอนน");
+    if (!hasRole) throw new Error("บัญชีของคุณไม่มีสิทธิ์ดำเนินการขั้นตอนนี้");
 
     const { data: app, error: appError } = await supabase
       .from("applications")
@@ -179,10 +179,10 @@ export const runApplicationAction = createServerFn({ method: "POST" })
       .eq("id", data.appId)
       .maybeSingle();
     if (appError) throw new Error(appError.message);
-    if (!app) throw new Error("ไมพบใบสมัครน้ หรือคณุ ไม่มีสิทธิดำเนินการ");
+    if (!app) throw new Error("ไม่พบใบสมัครนี้ หรือคุณไม่มีสิทธิ์ดำเนินการ");
 
     const belongs = role === "student" ? app.student_id === userId : role === "agent" ? true : app.college_id === userId;
-    if (!belongs) throw new Error("ใบสมัครน้ อยู่ในความดูละของเจ้าหน้าทีอื่่น");
+    if (!belongs) throw new Error("ใบสมัครนี้อยู่ในความดูแลของเจ้าหน้าที่คนอื่น");
 
     switch (data.action) {
       case "agent_return": {
@@ -208,7 +208,7 @@ export const runApplicationAction = createServerFn({ method: "POST" })
           .eq("college_name", course?.college_name ?? "")
           .maybeSingle();
         if (collegeError) throw new Error(collegeError.message);
-        if (!college) throw new Error(`ย งไม่มีบัญชี College ของ ${course?.college_name ?? "สถาบัทน"}`);
+        if (!college) throw new Error(`ยังไม่มีบัญชี College ของ ${course?.college_name ?? "สถาบันนี้"}`);
 
         const { error: linkError } = await supabase.from("applications").update({ college_id: college.account_id }).eq("id", app.id);
         if (linkError) throw new Error(linkError.message);
@@ -224,7 +224,7 @@ export const runApplicationAction = createServerFn({ method: "POST" })
         break;
       }
       case "college_issue_offer": {
-        if (!data.offer || !data.invoice) throw new Error("ต้องม Offer และ Invoice ก่อนอนุมัต");
+        if (!data.offer || !data.invoice) throw new Error("ต้องมี Offer และ Invoice ก่อนอนุมัติ");
         const { error: offerError } = await supabase
           .from("offers")
           .upsert(
@@ -261,7 +261,7 @@ export const runApplicationAction = createServerFn({ method: "POST" })
       }
       case "student_pay": {
         const payment = data.payment;
-        if (!payment) throw new Error("ต้องม หลักฐานการชำระเงิน");
+        if (!payment) throw new Error("ต้องมีหลักฐานการชำระเงิน");
         const { data: invoice, error: invoiceError } = await supabase
           .from("invoices")
           .select("amount")
@@ -296,7 +296,7 @@ export const runApplicationAction = createServerFn({ method: "POST" })
           .eq("status", PAYMENT_PENDING);
         if (error) throw new Error(error.message);
         await setStatus(supabase, app, AWAITING_PAYMENT, userId, LABEL.agent, data.note);
-        await notify(supabase, app.id, app.student_id, "Payment มีปัญหา", `${app.code}: ${data.note ?? "หลักฐาน ไมถูกต้อง"}`);
+        await notify(supabase, app.id, app.student_id, "Payment มีปัญหา", `${app.code}: ${data.note ?? "หลักฐานไม่ถูกต้อง"}`);
         break;
       }
       case "agent_verify_payment": {
