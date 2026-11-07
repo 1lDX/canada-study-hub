@@ -26,11 +26,12 @@ const publicNav = [
   { to: "/contact", label: "Contact" },
 ];
 
-export function PublicLayout({ children }: { children: ReactNode }) {
+export function PublicLayout({ children, showContact = true }: { children: ReactNode; showContact?: boolean }) {
   const { me, logout } = useStore();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const home = me ? `/${me.role}/dashboard` : "/login";
+  const nav = showContact ? publicNav : publicNav.filter((item) => item.to !== "/contact");
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -38,7 +39,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         <div className="container-page flex h-16 items-center justify-between">
           <Logo />
           <nav className="hidden items-center gap-1 md:flex">
-            {publicNav.map((n) => (
+            {nav.map((n) => (
               <ALink
                 key={n.to}
                 to={n.to}
@@ -90,7 +91,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         {open && (
           <div className="border-t border-border bg-card md:hidden">
             <div className="container-page flex flex-col py-2">
-              {[...publicNav, me ? { to: home, label: "Dashboard" } : { to: "/login", label: "Login" }, ...(me ? [] : [{ to: "/register", label: "Register" }])].map(
+              {[...nav, me ? { to: home, label: "Dashboard" } : { to: "/login", label: "Login" }, ...(me ? [] : [{ to: "/register", label: "Register" }])].map(
                 (n) => (
                   <ALink key={n.to + n.label} to={n.to} onClick={() => setOpen(false)} className="rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-accent">
                     {n.label}
@@ -112,7 +113,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </div>
           <div>
             <p className="mb-2 text-sm font-semibold">เมนู</p>
-            {publicNav.map((n) => (
+            {nav.map((n) => (
               <ALink key={n.to} to={n.to} className="block py-1 text-sm text-muted-foreground hover:text-primary">
                 {n.label}
               </ALink>

@@ -32,7 +32,7 @@ function Home() {
   const COURSES = useStore().db.courses;
   const featured = COURSES.slice(0, 3);
   return (
-    <PublicLayout>
+    <PublicLayout showContact={false}>
       <section className="relative overflow-hidden border-b border-border bg-surface">
         <div className="container-page grid items-center gap-10 py-14 lg:grid-cols-2 lg:py-20">
           <div>
