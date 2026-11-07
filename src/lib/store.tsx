@@ -178,7 +178,6 @@ type Ctx = {
   register: (a: { firstname: string; lastname: string; email: string; password: string }) => Promise<{
     ok: boolean;
     error?: string;
-    needsConfirm?: boolean;
   }>;
   logout: () => Promise<void>;
   saveInterests: (i: Interests) => Promise<void>;
@@ -416,16 +415,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return applyUser(data.user);
       },
       register: async (a) => {
-        const options = {
-          data: { firstname: a.firstname, lastname: a.lastname },
-          ...(typeof window === "undefined" ? {} : { emailRedirectTo: window.location.origin }),
-        };
-        const { data, error } = await supabase.auth.signUp({ email: a.email.trim(), password: a.password, options });
+        const { data, error } = await supabase.auth.signUp({
+          email: a.email.trim(),
+          password: a.password,
+          options: { data: { firstname: a.firstname, lastname: a.lastname } },
+        });
         if (error) return { ok: false, error: error.message };
-        if (!data.session) {
-          return { ok: true, needsConfirm: true };
-        }
-        await applyUser(data.user ?? null);
+        if (!data.session || !data.user) return { ok: false, error: "สมัครไม่สำเร็จ กรุณาลองใหม่อีกครั้ง" };
+        await applyUser(data.user);
         return { ok: true };
       },
       logout: async () => {
