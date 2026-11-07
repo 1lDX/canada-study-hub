@@ -5,8 +5,7 @@ export function isValidPersonName(value: string) {
 }
 
 export function isValidContactName(value: string) {
-  const parts = value.trim().split(/\s+/);
-  return parts.length > 0 && parts.every(isValidPersonName);
+  return isValidPersonName(value);
 }
 
 export function isValidEmail(value: string) {
