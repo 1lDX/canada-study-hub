@@ -108,6 +108,16 @@ export const submitApplication = createServerFn({ method: "POST" })
     if (roleError) throw new Error(roleError.message);
     if (!isStudent) throw new Error("เฉพาะบัญชีนักเรียนเท่านั้นที่สมัครหลักสูตรได้");
 
+    const { data: course, error: courseError } = await supabase
+      .from("courses")
+      .select("college_id")
+      .eq("id", data.courseId)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (courseError) throw new Error(courseError.message);
+    if (!course) throw new Error("ไม่พบหลักสูตรที่เปิดรับสมัคร");
+    if (!course.college_id) throw new Error("หลักสูตรนี้ยังไม่ได้ผูกกับ College เจ้าของ");
+
     const { data: agent, error: agentError } = await supabase
       .from("agents")
       .select("account_id")
@@ -120,7 +130,13 @@ export const submitApplication = createServerFn({ method: "POST" })
 
     const { data: created, error: insertError } = await supabase
       .from("applications")
-      .insert({ student_id: userId, course_id: data.courseId, agent_id: agent.account_id, status: PENDING })
+      .insert({
+        student_id: userId,
+        course_id: data.courseId,
+        agent_id: agent.account_id,
+        college_id: course.college_id,
+        status: PENDING,
+      })
       .select("id, code")
       .single();
     if (insertError) {
@@ -198,14 +214,16 @@ export const runApplicationAction = createServerFn({ method: "POST" })
       case "agent_send_college": {
         const { data: course, error: courseError } = await supabase
           .from("courses")
-          .select("college_name")
+          .select("college_id, college_name")
           .eq("id", app.course_id)
           .maybeSingle();
         if (courseError) throw new Error(courseError.message);
+        const collegeId = course?.college_id ?? app.college_id;
+        if (!collegeId) throw new Error(`หลักสูตรนี้ยังไม่ได้ผูกกับ College ของ ${course?.college_name ?? "สถาบันนี้"}`);
         const { data: college, error: collegeError } = await supabase
           .from("colleges")
           .select("account_id")
-          .eq("college_name", course?.college_name ?? "")
+          .eq("account_id", collegeId)
           .maybeSingle();
         if (collegeError) throw new Error(collegeError.message);
         if (!college) throw new Error(`ยังไม่มีบัญชี College ของ ${course?.college_name ?? "สถาบันนี้"}`);
