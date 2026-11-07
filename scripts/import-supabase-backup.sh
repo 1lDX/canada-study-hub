@@ -53,6 +53,31 @@ echo "Importing Storage bucket definitions (file bytes are not part of pg_dump).
 
 echo "Applying application privileges and Storage RLS policies..."
 "$PSQL" -v ON_ERROR_STOP=1 --single-transaction "$DB_URL" <<'SQL'
+alter type public.app_role add value if not exists 'admin';
+
+alter table public.courses
+  add column if not exists college_id uuid;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint c
+    join pg_class t on t.oid = c.conrelid
+    join pg_namespace n on n.oid = t.relnamespace
+    where c.conname = 'courses_college_id_fkey'
+      and t.relname = 'courses'
+      and n.nspname = 'public'
+  ) then
+    alter table public.courses
+      add constraint courses_college_id_fkey
+      foreign key (college_id) references public.colleges (account_id);
+  end if;
+end;
+$$;
+
+create index if not exists courses_college_idx on public.courses (college_id);
+
 -- Keep application data inaccessible to anon and governed by the existing RLS
 -- policies. The admin role is intentionally not granted special case-data access.
 revoke all on all tables in schema public from anon, authenticated;
@@ -61,7 +86,8 @@ revoke all on all sequences in schema public from anon, authenticated;
 grant select, update on public.profiles to authenticated;
 grant select on public.user_roles, public.agents, public.colleges,
   public.application_statuses, public.payment_statuses to authenticated;
-grant select on public.courses to anon, authenticated;
+grant select on public.courses to anon;
+grant select, insert, update on public.courses to authenticated;
 grant select, insert, update, delete on public.study_interests to authenticated;
 grant select, insert, update on public.language_tests to authenticated;
 grant select, insert, update on public.applications to authenticated;
@@ -92,6 +118,23 @@ revoke execute on function public.post_notification(uuid, uuid, text, text)
   from public, anon, authenticated;
 grant execute on function public.post_notification(uuid, uuid, text, text) to authenticated;
 revoke execute on function public.enforce_language_level() from public, anon, authenticated;
+
+drop policy if exists "courses: college read own" on public.courses;
+drop policy if exists "courses: college insert own" on public.courses;
+drop policy if exists "courses: college update own" on public.courses;
+create policy "courses: college read own"
+  on public.courses
+  for select to authenticated
+  using (public.has_role(auth.uid(), 'college') and college_id = auth.uid());
+create policy "courses: college insert own"
+  on public.courses
+  for insert to authenticated
+  with check (public.has_role(auth.uid(), 'college') and college_id = auth.uid());
+create policy "courses: college update own"
+  on public.courses
+  for update to authenticated
+  using (public.has_role(auth.uid(), 'college') and college_id = auth.uid())
+  with check (public.has_role(auth.uid(), 'college') and college_id = auth.uid());
 
 drop policy if exists "documents: upload by party" on storage.objects;
 drop policy if exists "documents: read by party" on storage.objects;
