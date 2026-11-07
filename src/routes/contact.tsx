@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PublicLayout } from "@/components/layouts";
 import { Badge, Button, Card, Field, SectionTitle, inputClass } from "@/components/ui-kit";
+import { isValidContactName, isValidEmail } from "@/lib/validation";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -19,7 +20,7 @@ function Contact() {
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", topic: "สอบถามหลักสูตร", message: "" });
   const set = (k: string, v: string) => setForm({ ...form, [k]: v });
-  const valid = form.name.trim() && /^\S+@\S+\.\S+$/.test(form.email) && form.message.trim().length > 5;
+  const valid = isValidContactName(form.name) && isValidEmail(form.email) && form.message.trim().length > 5;
 
   return (
     <PublicLayout>
@@ -42,7 +43,7 @@ function Contact() {
                     <input className={inputClass} maxLength={100} value={form.name} onChange={(e) => set("name", e.target.value)} />
                   </Field>
                   <Field label="Email">
-                    <input className={inputClass} maxLength={255} value={form.email} onChange={(e) => set("email", e.target.value)} />
+                    <input type="email" className={inputClass} maxLength={255} value={form.email} onChange={(e) => set("email", e.target.value)} />
                   </Field>
                 </div>
                 <Field label="เรื่องที่ต้องการติดต่อ">

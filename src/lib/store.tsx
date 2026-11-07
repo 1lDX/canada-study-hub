@@ -10,6 +10,7 @@ import {
 } from "./portal.functions";
 import { DOC_TYPES, STATUSES, meetsLevel, type Course, type PaymentStatus, type Status } from "./data";
 import { extensionOf, uploadFile } from "./uploads";
+import { isValidEmail, isValidLanguageScore, isValidLanguageTestDates, isValidPassword, isValidPersonName } from "./validation";
 
 export type Role = "student" | "agent" | "college" | "admin";
 
@@ -415,6 +416,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return applyUser(data.user);
       },
       register: async (a) => {
+        if (!isValidPersonName(a.firstname) || !isValidPersonName(a.lastname)) {
+          return { ok: false, error: "ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น ห้ามเว้นวรรค, - และ '" };
+        }
+        if (!isValidEmail(a.email)) return { ok: false, error: "รูปแบบอีเมลไม่ถูกต้อง" };
+        if (!isValidPassword(a.password)) return { ok: false, error: "Password ต้องมีอย่างน้อย 8 ตัว และมีตัวพิมพ์ใหญ่กับตัวพิมพ์เล็ก" };
         const { data, error } = await supabase.auth.signUp({
           email: a.email.trim(),
           password: a.password,
@@ -434,6 +440,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       saveInterests: async (i) => {
         await guard(async () => {
           if (!me) return;
+          if (!Number.isFinite(i.budget) || i.budget < 1000) throw new Error("งบประมาณต้องเป็นตัวเลขตั้งแต่ 1,000 CAD ขึ้นไป");
           const { error } = await supabase
             .from("study_interests")
             .upsert({
@@ -453,6 +460,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       saveTest: async (t) => {
         await guard(async () => {
           if (!me) return;
+          if (!isValidLanguageScore(t.testType, t.score, t.testDate)) throw new Error("คะแนนไม่ตรงกับประเภทข้อสอบหรือวันสอบ");
+          if (!isValidLanguageTestDates(t.testDate, t.expiryDate)) throw new Error("วันที่สอบหรือวันหมดอายุไม่ถูกต้อง");
           let fileName = dbRef.current.tests[me.id]?.fileName ?? "";
           let filePath = dbRef.current.tests[me.id]?.filePath ?? "";
           if (t.file) {

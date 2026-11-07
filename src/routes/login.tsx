@@ -44,10 +44,10 @@ function LoginPage() {
           <p className="mt-1 text-sm text-muted-foreground">สำหรับ Student, Agent และ College</p>
           <div className="mt-5 space-y-3">
             <Field label="Email">
-              <input className={inputClass} value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input type="email" className={inputClass} autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </Field>
             <Field label="Password">
-              <input type="password" className={inputClass} value={password} onChange={(e) => setPassword(e.target.value)} />
+              <input type="password" className={inputClass} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button className="w-full" onClick={submit} disabled={!email || !password}>

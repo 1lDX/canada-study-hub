@@ -32,7 +32,7 @@ function InterestsPage() {
   });
   const [saved, setSaved] = useState(false);
   const set = (k: string, v: string | number) => setF({ ...f, [k]: v });
-  const valid = f.city && f.type && f.field && f.duration && f.budget > 0 && f.education;
+  const valid = !!(f.city && f.type && f.field && f.duration && Number.isFinite(f.budget) && f.budget >= 1000 && f.education);
 
   return (
     <DashboardLayout nav={studentNav} title="Study Interests">
@@ -77,6 +77,7 @@ function InterestsPage() {
             <input
               type="number"
               min={1000}
+              step={100}
               className={inputClass}
               value={f.budget}
               onChange={(e) => set("budget", Number(e.target.value))}

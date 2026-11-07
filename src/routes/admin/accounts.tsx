@@ -5,6 +5,7 @@ import { DashboardLayout, adminNav } from "@/components/layouts";
 import { Badge, Button, Card, Empty, Field, SectionTitle, Table, inputClass } from "@/components/ui-kit";
 import { createManagedAccount, listManagedAccounts, setAgentStatus, type ManagedAccount } from "@/lib/admin.functions";
 import { formatDate } from "@/lib/data";
+import { isValidEmail, isValidPassword, isValidPersonName } from "@/lib/validation";
 
 export const Route = createFileRoute("/admin/accounts")({
   head: () => ({
@@ -50,10 +51,11 @@ function AdminAccounts() {
   const set = (k: keyof FormState, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const valid =
-    form.firstname.trim() &&
-    form.lastname.trim() &&
-    /^\S+@\S+\.\S+$/.test(form.email.trim()) &&
-    form.password.length >= 8;
+    isValidPersonName(form.firstname) &&
+    isValidPersonName(form.lastname) &&
+    isValidEmail(form.email) &&
+    !!form.org.trim() &&
+    isValidPassword(form.password);
 
   const submit = async () => {
     setCreating(true);
@@ -98,20 +100,20 @@ function AdminAccounts() {
             </Field>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="ชื่อ">
-                <input className={inputClass} maxLength={60} value={form.firstname} onChange={(e) => set("firstname", e.target.value)} />
+                <input className={inputClass} maxLength={60} autoComplete="given-name" value={form.firstname} onChange={(e) => set("firstname", e.target.value)} />
               </Field>
               <Field label="นามสกุล">
-                <input className={inputClass} maxLength={60} value={form.lastname} onChange={(e) => set("lastname", e.target.value)} />
+                <input className={inputClass} maxLength={60} autoComplete="family-name" value={form.lastname} onChange={(e) => set("lastname", e.target.value)} />
               </Field>
             </div>
             <Field label="Email">
-              <input className={inputClass} maxLength={255} value={form.email} onChange={(e) => set("email", e.target.value)} />
+              <input type="email" className={inputClass} maxLength={255} autoComplete="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
             </Field>
             <Field label="หน่วยงาน / สถาบัน" hint="บัญชี College ใช้ชื่อนี้เป็นชื่อสถาบัน">
               <input className={inputClass} maxLength={120} value={form.org} onChange={(e) => set("org", e.target.value)} />
             </Field>
-            <Field label="รหัสผ่านเริ่มต้น" hint="อย่างน้อย 8 ตัวอักษร — บัญชีจะพร้อมใช้ทันที (ยืนยันอีเมลแล้ว)">
-              <input type="password" className={inputClass} value={form.password} onChange={(e) => set("password", e.target.value)} />
+            <Field label="รหัสผ่านเริ่มต้น" hint="อย่างน้อย 8 ตัว ต้องมีตัวพิมพ์ใหญ่และตัวพิมพ์เล็ก — บัญชีจะพร้อมใช้ทันที (ยืนยันอีเมลแล้ว)">
+              <input type="password" className={inputClass} minLength={8} autoComplete="new-password" value={form.password} onChange={(e) => set("password", e.target.value)} />
             </Field>
             <Button disabled={!valid || creating} onClick={submit}>
               {creating ? "กำลังบันทึก..." : "สร้างบัญชี"}

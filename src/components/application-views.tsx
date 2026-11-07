@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DOC_TYPES, TIMELINE, formatDate, meetsLevel, money, type Course } from "@/lib/data";
 import { missingDocs, useStore, type Application, type Role } from "@/lib/store";
 import { downloadStoredFile } from "@/lib/uploads";
+import { isFinitePositive, isValidDueDate, todayIso } from "@/lib/validation";
 import { toast } from "sonner";
 import { Badge, Button, Card, Empty, Field, FileInput, StatusBadge, Table, inputClass } from "./ui-kit";
 
@@ -402,13 +403,13 @@ export function IssueOfferForm({ appId, amount }: { appId: string; amount: numbe
         </Field>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="ยอดที่ต้องชำระ (CAD)">
-            <input type="number" className={inputClass} value={amt} onChange={(e) => setAmt(Number(e.target.value))} />
+            <input type="number" min={0.01} step={0.01} className={inputClass} value={amt} onChange={(e) => setAmt(Number(e.target.value))} />
           </Field>
           <Field label="กำหนดชำระ">
-            <input type="date" className={inputClass} value={due} onChange={(e) => setDue(e.target.value)} />
+            <input type="date" className={inputClass} min={todayIso()} value={due} onChange={(e) => setDue(e.target.value)} />
           </Field>
         </div>
-        <Button disabled={!offer || !invoice || !due || busy} onClick={() => void submit()}>
+        <Button disabled={!offer || !invoice || !isFinitePositive(amt) || !isValidDueDate(due) || busy} onClick={() => void submit()}>
           {busy ? "กำลังบันทึก..." : "อนุมัติและอัปโหลดเอกสาร"}
         </Button>
       </div>

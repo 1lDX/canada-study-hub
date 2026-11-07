@@ -4,6 +4,7 @@ import { DashboardLayout, studentNav } from "@/components/layouts";
 import { Badge, Button, Card, Field, FileInput, inputClass } from "@/components/ui-kit";
 import { LEVELS, TEST_TYPES } from "@/lib/data";
 import { useStore } from "@/lib/store";
+import { isValidLanguageScore, isValidLanguageTestDates, languageScoreOptions, todayIso } from "@/lib/validation";
 
 export const Route = createFileRoute("/student/language-test")({
   head: () => ({
@@ -31,7 +32,9 @@ function LanguageTestPage() {
   const [file, setFile] = useState<File | null>(null);
   const [saved, setSaved] = useState(false);
   const set = (k: string, v: string) => setF({ ...f, [k]: v });
-  const valid = f.testType && f.score && f.level && f.testDate && f.fileName;
+  const scoreOptions = languageScoreOptions(f.testType, f.testDate);
+  const datesOk = isValidLanguageTestDates(f.testDate, f.expiryDate);
+  const valid = !!(f.testType && isValidLanguageScore(f.testType, f.score, f.testDate) && f.level && datesOk && f.fileName);
 
   return (
     <DashboardLayout nav={studentNav} title="Language Test">
@@ -45,7 +48,7 @@ function LanguageTestPage() {
         )}
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <Field label="ประเภทการสอบ">
-            <select className={inputClass} value={f.testType} onChange={(e) => set("testType", e.target.value)}>
+            <select className={inputClass} value={f.testType} onChange={(e) => setF({ ...f, testType: e.target.value, score: "" })}>
               <option value="">เลือกประเภท</option>
               {TEST_TYPES.map((t) => (
                 <option key={t}>{t}</option>
@@ -53,7 +56,10 @@ function LanguageTestPage() {
             </select>
           </Field>
           <Field label="คะแนน">
-            <input className={inputClass} maxLength={10} value={f.score} onChange={(e) => set("score", e.target.value)} />
+            <select className={inputClass} value={f.score} disabled={!scoreOptions.length} onChange={(e) => set("score", e.target.value)}>
+              <option value="">{f.testType === "TOEFL iBT" && !f.testDate ? "เลือกวันสอบก่อน" : "เลือกคะแนน"}</option>
+              {scoreOptions.map((score) => <option key={score}>{score}</option>)}
+            </select>
           </Field>
           <Field label="ระดับภาษา (CEFR)">
             <select className={inputClass} value={f.level} onChange={(e) => set("level", e.target.value)}>
@@ -64,10 +70,10 @@ function LanguageTestPage() {
             </select>
           </Field>
           <Field label="วันที่สอบ">
-            <input type="date" className={inputClass} value={f.testDate} onChange={(e) => set("testDate", e.target.value)} />
+            <input type="date" className={inputClass} max={todayIso()} value={f.testDate} onChange={(e) => setF({ ...f, testDate: e.target.value, score: "" })} />
           </Field>
           <Field label="วันหมดอายุ (ถ้ามี)">
-            <input type="date" className={inputClass} value={f.expiryDate} onChange={(e) => set("expiryDate", e.target.value)} />
+            <input type="date" className={inputClass} min={f.testDate || undefined} value={f.expiryDate} onChange={(e) => set("expiryDate", e.target.value)} />
           </Field>
         </div>
         <div className="mt-3">

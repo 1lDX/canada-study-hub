@@ -3,6 +3,7 @@ import { useState } from "react";
 import { PublicLayout } from "@/components/layouts";
 import { Button, Card, Field, inputClass } from "@/components/ui-kit";
 import { useStore } from "@/lib/store";
+import { isValidEmail, isValidPassword, isValidPersonName } from "@/lib/validation";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -23,10 +24,13 @@ function RegisterPage() {
   const [error, setError] = useState("");
   const set = (k: string, v: string) => setF({ ...f, [k]: v });
 
-  const emailOk = /^\S+@\S+\.\S+$/.test(f.email);
-  const valid = f.firstname.trim() && f.lastname.trim() && emailOk && f.password.length >= 6 && f.password === f.confirm;
+  const namesOk = isValidPersonName(f.firstname) && isValidPersonName(f.lastname);
+  const emailOk = isValidEmail(f.email);
+  const passwordOk = isValidPassword(f.password);
+  const valid = namesOk && emailOk && passwordOk && f.password === f.confirm;
 
   const submit = async () => {
+    if (!valid) return setError("กรุณาตรวจสอบชื่อ อีเมล และ Password ให้ถูกต้อง");
     const res = await register({ firstname: f.firstname.trim(), lastname: f.lastname.trim(), email: f.email.trim(), password: f.password });
     if (!res.ok) return setError(res.error ?? "สมัครไม่สำเร็จ");
     navigate({ to: "/student/dashboard" as never });
@@ -41,23 +45,25 @@ function RegisterPage() {
           <div className="mt-5 space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="ชื่อ">
-                <input className={inputClass} maxLength={60} value={f.firstname} onChange={(e) => set("firstname", e.target.value)} />
+                <input className={inputClass} maxLength={60} autoComplete="given-name" value={f.firstname} onChange={(e) => set("firstname", e.target.value)} />
               </Field>
               <Field label="นามสกุล">
-                <input className={inputClass} maxLength={60} value={f.lastname} onChange={(e) => set("lastname", e.target.value)} />
+                <input className={inputClass} maxLength={60} autoComplete="family-name" value={f.lastname} onChange={(e) => set("lastname", e.target.value)} />
               </Field>
             </div>
             <Field label="Email">
-              <input className={inputClass} maxLength={255} value={f.email} onChange={(e) => set("email", e.target.value)} />
+              <input type="email" className={inputClass} maxLength={255} autoComplete="email" value={f.email} onChange={(e) => set("email", e.target.value)} />
             </Field>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Password" hint="อย่างน้อย 6 ตัวอักษร">
-                <input type="password" className={inputClass} value={f.password} onChange={(e) => set("password", e.target.value)} />
+              <Field label="Password" hint="อย่างน้อย 8 ตัว ต้องมีตัวพิมพ์ใหญ่และตัวพิมพ์เล็ก">
+                <input type="password" className={inputClass} minLength={8} autoComplete="new-password" value={f.password} onChange={(e) => set("password", e.target.value)} />
               </Field>
               <Field label="ยืนยัน Password">
-                <input type="password" className={inputClass} value={f.confirm} onChange={(e) => set("confirm", e.target.value)} />
+                <input type="password" className={inputClass} minLength={8} autoComplete="new-password" value={f.confirm} onChange={(e) => set("confirm", e.target.value)} />
               </Field>
             </div>
+            {(f.firstname || f.lastname) && !namesOk && <p className="text-sm text-destructive">ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น ห้ามเว้นวรรค, - และ '</p>}
+            {!!f.password && !passwordOk && <p className="text-sm text-destructive">Password ต้องมีอย่างน้อย 8 ตัว และมีตัวพิมพ์ใหญ่กับตัวพิมพ์เล็ก</p>}
             {error && <p className="text-sm text-destructive">{error}</p>}
             {!!f.confirm && f.confirm !== f.password && <p className="text-sm text-destructive">รหัสผ่านไม่ตรงกัน</p>}
             <Button className="w-full" disabled={!valid} onClick={submit}>

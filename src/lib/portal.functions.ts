@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { PAYMENT_STATUSES, STATUSES } from "./data";
+import { isFinitePositive, isNotFutureDate, isValidDueDate } from "./validation";
 
 // Status strings come from the single source of truth (src/lib/data.ts) so the
 // database dictionaries, the workflow and the screens can never drift apart.
@@ -243,6 +244,8 @@ export const runApplicationAction = createServerFn({ method: "POST" })
       }
       case "college_issue_offer": {
         if (!data.offer || !data.invoice) throw new Error("ต้องมี Offer และ Invoice ก่อนอนุมัติ");
+        if (!isFinitePositive(data.invoice.amount)) throw new Error("ยอด Invoice ต้องมากกว่า 0");
+        if (!isValidDueDate(data.invoice.dueDate)) throw new Error("กำหนดชำระต้องเป็นวันนี้หรือวันถัดไป");
         const { error: offerError } = await supabase
           .from("offers")
           .upsert(
@@ -280,6 +283,8 @@ export const runApplicationAction = createServerFn({ method: "POST" })
       case "student_pay": {
         const payment = data.payment;
         if (!payment) throw new Error("ต้องมีหลักฐานการชำระเงิน");
+        if (!isFinitePositive(payment.amount)) throw new Error("ยอดชำระต้องมากกว่า 0");
+        if (!isNotFutureDate(payment.paidDate)) throw new Error("วันที่ชำระต้องไม่เป็นวันในอนาคต");
         const { data: invoice, error: invoiceError } = await supabase
           .from("invoices")
           .select("amount")

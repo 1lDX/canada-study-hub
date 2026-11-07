@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { isValidEmail, isValidPassword, isValidPersonName } from "@/lib/validation";
 
 /**
  * Admin is a minimal staff role: it manages accounts (create Agent/College
@@ -91,9 +92,16 @@ export const createManagedAccount = createServerFn({ method: "POST" })
     if (data.role !== "agent" && data.role !== "college") {
       throw new Error("สร้างได้เฉพาะบัญชี Agent หรือ College เท่านั้น");
     }
+    const firstname = data.firstname.trim();
+    const lastname = data.lastname.trim();
+    const org = data.org.trim();
     const email = data.email.trim().toLowerCase();
-    if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error("รูปแบบอีเมลไม่ถูกต้อง");
-    if (data.password.length < 8) throw new Error("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+    if (!isValidPersonName(firstname) || !isValidPersonName(lastname)) {
+      throw new Error("ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น ห้ามเว้นวรรค, - และ '");
+    }
+    if (!isValidEmail(email)) throw new Error("รูปแบบอีเมลไม่ถูกต้อง");
+    if (!org) throw new Error("กรุณากรอกชื่อหน่วยงานหรือสถาบัน");
+    if (!isValidPassword(data.password)) throw new Error("รหัสผ่านต้องมีอย่างน้อย 8 ตัว และมีตัวพิมพ์ใหญ่กับตัวพิมพ์เล็ก");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -102,9 +110,9 @@ export const createManagedAccount = createServerFn({ method: "POST" })
       password: data.password,
       email_confirm: true,
       user_metadata: {
-        firstname: data.firstname.trim(),
-        lastname: data.lastname.trim(),
-        org: data.org.trim(),
+        firstname,
+        lastname,
+        org,
       },
       app_metadata: { portal_role: data.role },
     });
@@ -118,10 +126,6 @@ export const createManagedAccount = createServerFn({ method: "POST" })
     // account shows up on the accounts page and can be managed before its
     // first sign-in. The existing ensureProfile flow keeps working: it sees the
     // existing profile and reuses it.
-    const firstname = data.firstname.trim();
-    const lastname = data.lastname.trim();
-    const org = data.org.trim();
-
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .insert({ id: created.user.id, firstname, lastname, email, org: org || null });

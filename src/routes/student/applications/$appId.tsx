@@ -12,6 +12,7 @@ import {
 import { Badge, Button, Card, Empty, Field, FileInput, SectionTitle, StatusBadge, inputClass } from "@/components/ui-kit";
 import { DOC_TYPES, formatDate, money } from "@/lib/data";
 import { missingDocs, useStore } from "@/lib/store";
+import { isFinitePositive, isNotFutureDate, todayIso } from "@/lib/validation";
 
 export const Route = createFileRoute("/student/applications/$appId")({
   head: () => ({
@@ -46,6 +47,14 @@ function AppDetail() {
 
   const submitPay = async () => {
     if (!invoice) return;
+    if (!isFinitePositive(pay.amount)) {
+      setPayError("จำนวนเงินต้องมากกว่า 0");
+      return;
+    }
+    if (!isNotFutureDate(pay.paidDate)) {
+      setPayError("วันที่ชำระต้องไม่เป็นวันในอนาคต");
+      return;
+    }
     if (pay.amount !== invoice.amount) {
       setPayError(`ยอดเงินไม่ตรงกับ Invoice (ต้องชำระ ${money(invoice.amount)})`);
       return;
@@ -115,13 +124,15 @@ function AppDetail() {
                   <Field label="จำนวนเงินที่ชำระ (CAD)">
                     <input
                       type="number"
+                      min={0.01}
+                      step={0.01}
                       className={inputClass}
                       value={pay.amount || ""}
                       onChange={(e) => setPay({ ...pay, amount: Number(e.target.value) })}
                     />
                   </Field>
                   <Field label="วันที่ชำระ">
-                    <input type="date" className={inputClass} value={pay.paidDate} onChange={(e) => setPay({ ...pay, paidDate: e.target.value })} />
+                    <input type="date" className={inputClass} max={todayIso()} value={pay.paidDate} onChange={(e) => setPay({ ...pay, paidDate: e.target.value })} />
                   </Field>
                 </div>
                 <div className="mt-3">
@@ -130,7 +141,7 @@ function AppDetail() {
                   </Field>
                 </div>
                 {payError && <Badge tone="danger">{payError}</Badge>}
-                <Button className="mt-3" disabled={!pay.amount || !pay.paidDate || !pay.file} onClick={submitPay}>
+                <Button className="mt-3" disabled={!isFinitePositive(pay.amount) || !isNotFutureDate(pay.paidDate) || !pay.file} onClick={submitPay}>
                   ส่งหลักฐานการชำระเงิน
                 </Button>
               </Card>

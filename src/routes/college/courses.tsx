@@ -49,7 +49,7 @@ function ManageCourses() {
   const save = async () => {
     if (!edit) return;
     if (!edit.course_name.trim() || !edit.college_name.trim()) { toast.error("กรุณากรอกชื่อคอร์สและชื่อ College"); return; }
-    if (!(edit.tuition >= 0)) { toast.error("ค่าเรียนไม่ถูกต้อง"); return; }
+    if (!Number.isFinite(edit.tuition) || edit.tuition < 0) { toast.error("ค่าเรียนต้องเป็นตัวเลขตั้งแต่ 0 ขึ้นไป"); return; }
     setSaving(true);
     const payload = {
       course_name: edit.course_name.trim(), college_name: edit.college_name.trim(), city: edit.city,
@@ -91,22 +91,22 @@ function ManageCourses() {
         <Card className="mb-6">
           <p className="mb-3 font-semibold">{edit.id ? "แก้ไขคอร์ส" : "เพิ่มคอร์สใหม่"}</p>
           <div className="grid gap-3 md:grid-cols-2">
-            <Field label="ชื่อคอร์ส"><input className={inputClass} value={edit.course_name} onChange={(e) => set("course_name", e.target.value)} /></Field>
-            <Field label="ชื่อ College"><input className={inputClass} value={edit.college_name} onChange={(e) => set("college_name", e.target.value)} /></Field>
+            <Field label="ชื่อคอร์ส"><input className={inputClass} maxLength={160} value={edit.course_name} onChange={(e) => set("course_name", e.target.value)} /></Field>
+            <Field label="ชื่อ College"><input className={inputClass} maxLength={120} value={edit.college_name} onChange={(e) => set("college_name", e.target.value)} /></Field>
             <Field label="เมือง">{sel("city", CITIES)}</Field>
             <Field label="ประเภทหลักสูตร">{sel("course_type", COURSE_TYPES)}</Field>
             <Field label="สาขา">{sel("field", FIELDS)}</Field>
             <Field label="ระยะเวลา">{sel("duration", DURATIONS)}</Field>
             <Field label="ระดับภาษาที่ต้องการ">{sel("language_level", LEVELS)}</Field>
-            <Field label="ค่าเรียน (CAD)"><input type="number" min={0} className={inputClass} value={edit.tuition} onChange={(e) => set("tuition", Number(e.target.value))} /></Field>
-            <Field label="รอบเปิดรับ"><input className={inputClass} value={edit.intake} placeholder="เช่น Jan / May / Sep" onChange={(e) => set("intake", e.target.value)} /></Field>
+            <Field label="ค่าเรียน (CAD)"><input type="number" min={0} step={0.01} className={inputClass} value={edit.tuition} onChange={(e) => set("tuition", Number(e.target.value))} /></Field>
+            <Field label="รอบเปิดรับ"><input className={inputClass} maxLength={120} value={edit.intake} placeholder="เช่น Jan / May / Sep" onChange={(e) => set("intake", e.target.value)} /></Field>
             <Field label="สถานะ">
               <select className={inputClass} value={edit.is_active ? "1" : "0"} onChange={(e) => set("is_active", e.target.value === "1")}>
                 <option value="1">เปิดรับสมัคร</option><option value="0">ปิด</option>
               </select>
             </Field>
             <div className="md:col-span-2">
-              <Field label="รายละเอียด"><textarea rows={3} className={inputClass} value={edit.description} onChange={(e) => set("description", e.target.value)} /></Field>
+              <Field label="รายละเอียด"><textarea rows={3} maxLength={2000} className={inputClass} value={edit.description} onChange={(e) => set("description", e.target.value)} /></Field>
             </div>
           </div>
           <div className="mt-4 flex gap-2">

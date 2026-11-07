@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { isValidPersonName } from "@/lib/validation";
 
 export type ProfileRecord = {
   id: string;
@@ -46,16 +47,22 @@ export const ensureProfile = createServerFn({ method: "POST" })
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) throw new Error("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
 
-      const meta = (userData.user.user_metadata ?? {}) as Record<string, unknown>;
-      const appMeta = (userData.user.app_metadata ?? {}) as Record<string, unknown>;
-      const claimed = String(appMeta["portal_role"] ?? "student");
-      const role: "student" | "agent" | "college" | "admin" =
-        claimed === "agent" || claimed === "college" || claimed === "admin" ? claimed : "student";
+    const meta = (userData.user.user_metadata ?? {}) as Record<string, unknown>;
+    const appMeta = (userData.user.app_metadata ?? {}) as Record<string, unknown>;
+    const claimed = String(appMeta["portal_role"] ?? "student");
+    const role: "student" | "agent" | "college" | "admin" =
+      claimed === "agent" || claimed === "college" || claimed === "admin" ? claimed : "student";
 
-      const email = userData.user.email ?? "";
-      const firstname = String(meta["firstname"] ?? "").trim() || email.split("@")[0] || "สมาชิก";
-      const lastname = String(meta["lastname"] ?? "").trim();
-      const org = meta["org"] ? String(meta["org"]) : null;
+    const email = userData.user.email ?? "";
+    const firstname = String(meta["firstname"] ?? "").trim();
+    const lastname = String(meta["lastname"] ?? "").trim();
+    const org = meta["org"] ? String(meta["org"]).trim() : null;
+    if (!isValidPersonName(firstname) || !isValidPersonName(lastname)) {
+      throw new Error("ชื่อและนามสกุลต้องเป็นตัวอักษรเท่านั้น ห้ามเว้นวรรค, - และ '");
+    }
+    if ((role === "agent" || role === "college") && !org) {
+      throw new Error("กรุณากรอกชื่อหน่วยงานหรือสถาบัน");
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
